@@ -57,12 +57,12 @@ class Class:
         return self.name
 
 
-# (남은 신청 과목(list), 이미 사용한 시간(set)) -> 가능한 강의 조합 list memoization
+# 상태:(남은 신청 과목(tuple), 이미 사용한 시간(tuple)) -> 결과:해당 상태에서 가능한 강의 조합 memoization
 memo = {}
 
 
-def search(enroll_list, used_time, used_list, remain_credit):
-    # enroll_list:tuple, used_time:tuple, used_list:list(Lecture,Class; type:list), remain_credit:int
+def search(enroll_list, used_time, remain_credit):
+    # enroll_list:tuple, used_time:tuple, remain_credit:int
     global memo
     if not enroll_list in memo.keys():
         memo[enroll_list] = {}
@@ -70,27 +70,46 @@ def search(enroll_list, used_time, used_list, remain_credit):
         memo[enroll_list][used_time] = []
 
     if len(memo[enroll_list][used_time]):
-        if memo[enroll_list][used_time][-1] is None and used_list in memo[enroll_list][used_time]:
-            print('memo used')
-            return
-    if remain_credit <= 0:
-        memo[enroll_list][used_time].append(used_list)
-        #print('memo success')
+        return memo[enroll_list][used_time] # memoization
     if len(enroll_list) == 0:
-        return
+        if remain_credit <= 0:
+            memo[enroll_list][used_time].append([])
+            return memo[enroll_list][used_time]
+        else:
+            return 0
+
+    res = []
+    res_times = []
+    if remain_credit <= 0:
+        res.append([])
+        res_times.append([])
 
     lec = enroll_list[0]
     for cls in lec.classes:
-        #print(lec, cls)
         if len(set(used_time) & set(cls.time)) == 0:
-
             new_used_time = list(set(used_time) | set(cls.time))
             new_used_time.sort()
-            search(enroll_list[1:], tuple(new_used_time), used_list + [[lec, cls]], remain_credit - lec.credit.real)
-    search(enroll_list[1:], used_time, used_list, remain_credit)
+            #next search
+            successor = search(enroll_list[1:], tuple(new_used_time), remain_credit - lec.credit.real)
+            if successor:
+                for i in successor:
+                    flag = True
+                    for j in range(len(res)):
+                        if res_times[j] == new_used_time: # check same-time classes
+                            flag = False
+                            if cls not in res[j][0][1]:
+                                res[j][0][1].append(cls)
+                    if flag:
+                        res.append([[lec, [cls]]] + i)
+                        res_times.append(new_used_time)
+    #without lec search
+    successor = search(enroll_list[1:], used_time, remain_credit)
+    if successor:
+        res = res + successor
+        #res_times = res_times + len(successor) * [used_time]
 
-    memo[enroll_list][used_time].append(None)
-    return
+    memo[enroll_list][used_time] = memo[enroll_list][used_time] + res
+    return memo[enroll_list][used_time]
 
 
 # main
@@ -139,13 +158,12 @@ if __name__ == '__main__':
             break
 
     input_tuple = tuple(input_list)
-    search(input_tuple, tuple(), list(), minimum_credit)
-    #print(memo)
-    for i in memo.values():
-        for j in i.values():
-            for k in j:
-                if not k is None:
-                    for l in k:
-                        print(str(l[0]) + ' ' + str(l[1]), end=' / ')
-                    print()
-
+    result = search(input_tuple, tuple(), minimum_credit)
+    for i,table in enumerate(result): # iterating time tables
+        print("%dst Time Table:" % (i+1))
+        for lecture in table: # iterating lectures
+            print(lecture[0], end='    ')
+            for cls in lecture[1]:
+                print(cls, end=',')
+            print()
+        print('\n')
