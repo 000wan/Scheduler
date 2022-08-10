@@ -16,15 +16,16 @@ days = ['월', '화', '수', '목', '금', '토', '일']
 def time_stock(period):  # lecture time text to int list
     result = list()
     for p in period.split('\r\n'):
-        items = p.split(' ')
-        day = days.index(items[0])
-        times = items[1].split('~')
-        # 00:00~24:00 -> 0~48 one-to-one mapping
-        start = 2 * int(times[0].split(':')[0]) + int(times[0].split(':')[1]) // 30
-        end = 2 * int(times[1].split(':')[0]) + int(times[1].split(':')[1]) // 30
+        if p:
+            items = p.split(' ')
+            day = days.index(items[0])
+            times = items[1].split('~')
+            # 00:00~24:00 -> 0~48 one-to-one mapping
+            start = 2 * int(times[0].split(':')[0]) + int(times[0].split(':')[1]) // 30
+            end = 2 * int(times[1].split(':')[0]) + int(times[1].split(':')[1]) // 30
 
-        for t in range(start, end):
-            result.append(48 * day + t)  # day,time -> 0~7*48
+            for t in range(start, end):
+                result.append(48 * day + t)  # day,time -> 0~7*48
 
     result.sort()
     return result
@@ -69,8 +70,8 @@ def search(enroll_list, used_time, used_list, remain_credit):
         memo[enroll_list][used_time] = []
 
     if len(memo[enroll_list][used_time]):
-        if memo[enroll_list][used_time][-1] is None:
-            #print('memo used')
+        if memo[enroll_list][used_time][-1] is None and used_list in memo[enroll_list][used_time]:
+            print('memo used')
             return
     if remain_credit <= 0:
         memo[enroll_list][used_time].append(used_list)
@@ -80,7 +81,9 @@ def search(enroll_list, used_time, used_list, remain_credit):
 
     lec = enroll_list[0]
     for cls in lec.classes:
+        #print(lec, cls)
         if len(set(used_time) & set(cls.time)) == 0:
+
             new_used_time = list(set(used_time) | set(cls.time))
             new_used_time.sort()
             search(enroll_list[1:], tuple(new_used_time), used_list + [[lec, cls]], remain_credit - lec.credit.real)
@@ -127,6 +130,8 @@ if __name__ == '__main__':
         if inp:
             if inp in lecture_list.keys():
                 input_list.append(lecture_list[inp])
+                #for i in lecture_list[inp].classes:
+                #    print(inp, i.name, i.professor, i.time)
                 cnt += 1
             else:
                 print("- Code not in data list! Try again.")
@@ -135,12 +140,12 @@ if __name__ == '__main__':
 
     input_tuple = tuple(input_list)
     search(input_tuple, tuple(), list(), minimum_credit)
-    print(memo)
+    #print(memo)
     for i in memo.values():
         for j in i.values():
             for k in j:
                 if not k is None:
                     for l in k:
                         print(str(l[0]) + ' ' + str(l[1]), end=' / ')
-                print()
+                    print()
 
