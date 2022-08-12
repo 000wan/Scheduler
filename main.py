@@ -95,20 +95,21 @@ def search(enroll_list, used_time, remain_credit):
                 for i in successor:
                     flag = True
                     for j in range(len(res)):
-                        if res_times[j] == new_used_time: # check same-time classes
-                            flag = False
+                        if res_times[j] == cls.time: # check same-time classes
                             if cls not in res[j][0][1]:
                                 res[j][0][1].append(cls)
+                            flag = False
+                            break
                     if flag:
                         res.append([[lec, [cls]]] + i)
-                        res_times.append(new_used_time)
+                        res_times.append(cls.time)
     #without lec search
     successor = search(enroll_list[1:], used_time, remain_credit)
     if successor:
         res = res + successor
         #res_times = res_times + len(successor) * [used_time]
 
-    memo[enroll_list][used_time] = memo[enroll_list][used_time] + res
+    memo[enroll_list][used_time] = res
     return memo[enroll_list][used_time]
 
 
