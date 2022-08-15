@@ -2,9 +2,10 @@
 #  'Scheduler' by 000wan
 # =========================
 # Description :
-#   University Schedule Generator with probabilities
+#    University Schedule Generator with probabilities
 # History :
-#   2022/08/09 : Development starts with python
+#    2022/08/09 : Development starts with python
+#    2022/08/10 ~ 2022/08/14 : Search algorithm using dp complete
 #
 
 import xlrd
@@ -60,7 +61,7 @@ class Class:
 # 상태:(남은 신청 과목(tuple), 이미 사용한 시간(tuple)) -> 결과:해당 상태에서 가능한 강의 조합 memoization
 memo = {}
 
-
+# dp 탐색 함수
 def search(enroll_list, used_time, remain_credit):
     # enroll_list:tuple, used_time:tuple, remain_credit:int
     global memo
@@ -73,14 +74,14 @@ def search(enroll_list, used_time, remain_credit):
         return memo[enroll_list][used_time] # memoization
     if len(enroll_list) == 0:
         if remain_credit <= 0:
-            memo[enroll_list][used_time].append([])
+            memo[enroll_list][used_time].append({})
             return memo[enroll_list][used_time]
         else:
             return 0
 
     res = []
     if remain_credit <= 0:
-        res.append([])
+        res.append({})
 
     lec = enroll_list[0]
     for cls in lec.classes:
@@ -94,13 +95,20 @@ def search(enroll_list, used_time, remain_credit):
                     flag = True
                     for j in res:
                         if len(j):
-                            if j[1:] == i and j[0][1][0].time == cls.time: # check same-time classes
-                                if cls not in j[0][1]:
-                                    j[0][1].append(cls)
-                                flag = False
-                                break
+                            recorded = dict(j)
+                            rec_lec = recorded.pop(str(lec), None)
+
+                            if recorded == i and not rec_lec is None:
+                                if rec_lec[0].time == cls.time: # check same-time classes
+                                    if cls not in rec_lec:
+                                        j[str(lec)].append(cls)
+                                    flag = False
+                                    break
                     if flag:
-                        res.append([[lec, [cls]]] + i)
+                        # res = list( dict(lec: [classes]) )
+                        new_res = dict(i)
+                        new_res[str(lec)] = [cls]
+                        res.append(new_res)
     #without lec search
     successor = search(enroll_list[1:], used_time, remain_credit)
     if successor:
@@ -157,11 +165,11 @@ if __name__ == '__main__':
 
     input_tuple = tuple(input_list)
     result = search(input_tuple, tuple(), minimum_credit)
-    for i,table in enumerate(result): # iterating time tables
+    for i, table in enumerate(result): # iterating time tables
         print("%dst Time Table:" % (i+1))
         for lecture in table: # iterating lectures
-            print(lecture[0], end='    ')
-            for cls in lecture[1]:
+            print(lecture, end='    ')
+            for cls in table[lecture]:
                 print(cls, end=',')
             print()
         print('\n')
