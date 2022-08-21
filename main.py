@@ -2,16 +2,22 @@
 #  'Scheduler' by 000wan
 # =========================
 # Description :
-#    University Schedule Generator with probabilities
+#    University Schedule Generator
 # History :
 #    2022/08/09 : Development starts with python
 #    2022/08/10 ~ 2022/08/14 : Search algorithm using dp complete
-#    2022/08/15 ~
+#    2022/08/15 ~ 2022/08/22 : Generate time-table image
 #
 
 import matplotlib
 import matplotlib.pyplot as plt
-# import matplotlib.colors as mcolors
+import matplotlib.colors as mcolors
+
+# Korean Font 'malgun gothic' loaded
+from matplotlib import font_manager, rc
+font_path = "C:/Windows/Fonts/malgun.ttf"
+font = font_manager.FontProperties(fname=font_path).get_name()
+rc('font', family=font)
 
 import os
 import xlrd
@@ -55,8 +61,9 @@ class Lecture:
 
 
 class Class:
-    def __init__(self, name, professor, capacity, enrolled, time, classroom, info):
+    def __init__(self, name, lecture_name, professor, capacity, enrolled, time, classroom, info):
         self.name = name  # 분반명
+        self.lecture_name = lecture_name
         self.professor = professor  # 담당교수
         self.capacity = capacity  # 정원
         self.enrolled = enrolled  # 수강인원
@@ -92,7 +99,7 @@ def search(enroll_list, used_time, remain_credit, necessary_list):
             return 0
 
     res = []
-    if remain_credit <= 0:
+    if remain_credit <= 0 and len(necessary_list) == 0:
         res.append({})
 
     lec = enroll_list[0]
@@ -100,8 +107,13 @@ def search(enroll_list, used_time, remain_credit, necessary_list):
         if len(set(used_time) & set(cls.time)) == 0:
             new_used_time = list(set(used_time) | set(cls.time))
             new_used_time.sort()
+
+            new_necessary_list = list(necessary_list)
+            if lec in new_necessary_list:
+                new_necessary_list.remove(lec)
+
             # next search
-            successor = search(enroll_list[1:], tuple(new_used_time), remain_credit - lec.credit.real, necessary_list)
+            successor = search(enroll_list[1:], tuple(new_used_time), remain_credit - lec.credit.real, new_necessary_list)
             if successor:
                 for i in successor:
                     flag = True
@@ -110,8 +122,9 @@ def search(enroll_list, used_time, remain_credit, necessary_list):
                             recorded = dict(j)
                             rec_lec = recorded.pop(str(lec), None)
 
+                            # check same-time and same-name classes
                             if recorded == i and not rec_lec is None:
-                                if rec_lec[0].time == cls.time:  # check same-time classes
+                                if rec_lec[0].time == cls.time and rec_lec[0].lecture_name == cls.lecture_name:
                                     if cls not in rec_lec:
                                         j[str(lec)].append(cls)
                                     flag = False
@@ -179,7 +192,8 @@ def print_table(count, time_table, lecture_list, result_path):
 
     for lec_code in time_table:
         lec = lecture_list[lec_code]
-        times = time_table[lec_code][0].time
+        cls = time_table[lec_code][0]
+        times = cls.time
 
         pivot = 0
         for t in range(len(times)):
@@ -195,9 +209,9 @@ def print_table(count, time_table, lecture_list, result_path):
             plt.fill_between([day - 0.48, day + 0.48], [start, start], [end, end], color=lec.color,
                              edgecolor='k', linewidth=0.5)
             if len(lec.classes) == 1:
-                plt.text(day, (start + end) * 0.5, str(lec), ha='center', va='center', fontsize=16)
+                plt.text(day, (start + end) * 0.5, cls.lecture_name, ha='center', va='center', fontsize=15)
             else:
-                plt.text(day, (start + end) * 0.5 - 0.2, str(lec), ha='center', va='center', fontsize=16)
+                plt.text(day, (start + end) * 0.5 - 0.2, cls.lecture_name, ha='center', va='center', fontsize=15)
                 classes = list(map(str, time_table[lec_code]))
                 sub_title = '(' + (', '.join(classes)) + ')'
                 plt.text(day, (start + end) * 0.5 + 0.2, sub_title, ha='center', va='center', fontsize=12)
@@ -232,7 +246,7 @@ if __name__ == '__main__':
             lecture_list[code] = Lecture(code, row[8], credit, row[:7] + row[8:12])
         # Class 생성
         lec_time = time_stock(row[17])
-        cls = Class(row[7].strip(), row[12], int(row[15]), int(row[16]), lec_time, row[18], row[12:])
+        cls = Class(row[7].strip(), row[8], row[12], int(row[15]), int(row[16]), lec_time, row[18], row[12:])
         lecture_list[code].classes.append(cls)
 
     '''# test
