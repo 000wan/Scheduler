@@ -6,13 +6,21 @@
 # History :
 #    2022/08/09 : Development starts with python
 #    2022/08/10 ~ 2022/08/14 : Search algorithm using dp complete
+#    2022/08/15 ~
 #
 
-import xlrd
+import matplotlib
 import matplotlib.pyplot as plt
+# import matplotlib.colors as mcolors
+
+import os
+import xlrd
+import time as current_time
 
 line_string = "=========================\n"
 days = ['월', '화', '수', '목', '금', '토', '일']
+colors = matplotlib.cm.get_cmap('Pastel1').colors
+# colors = mcolors.TABLEAU_COLORS
 
 def time_stock(period):  # lecture time text to int list
     result = list()
@@ -33,6 +41,8 @@ def time_stock(period):  # lecture time text to int list
 
 
 class Lecture:
+    color = None
+
     def __init__(self, code, name, credit, info):
         self.code = code  # 과목번호
         self.name = name  # 과목명
@@ -55,7 +65,8 @@ class Class:
         self.info = info
 
     def __str__(self):
-        return self.name
+        if self.name == '': return 'Staff'
+        else:   return self.name
 
 
 # 상태:(남은 신청 과목(tuple), 이미 사용한 시간(tuple)) -> 결과:해당 상태에서 가능한 강의 조합 memoization
@@ -138,41 +149,79 @@ def choose_lectures(lecture_list, max_cnt=100):
 
 # time table matplotlib
 # Ref: https://masudakoji.github.io/2015/05/23/generate-timetable-using-matplotlib/en/
-def print_table(time_table):
+def print_table(count, time_table, lecture_list, result_path):
     days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
+    times = list()
+    for i in range(16,49):
+        if i%2 == 0:    times.append(i//2)
+        else:   times.append('')
+
     fig = plt.figure(figsize=(10, 15))
 
     # Set Axis
-    ax = fig.add_subplot(111)
-    ax.yaxis.grid()
+    ax = plt.axes()
+    ax.yaxis.grid(linestyle='--', color='gray')
     ax.set_xlim(0.5, len(days) + 0.5)
-    ax.set_ylim(24.1, 8.9)
+    ax.set_ylim(24.1, 7.9)
     ax.set_xticks(range(1, len(days) + 1))
-    ax.set_yticks(range(9, 25))
+    ax.set_yticks(list(map(lambda x: x/2, range(16, 49))))
     ax.set_xticklabels(days)
+    ax.set_yticklabels(times)
 
     # Set Second Axis
     ax2 = ax.twiny().twinx()
     ax2.set_xlim(ax.get_xlim())
     ax2.set_ylim(ax.get_ylim())
     ax2.set_xticks(ax.get_xticks())
-    ax2.set_xticklabels(days)
     ax2.set_yticks(ax.get_yticks())
+    ax2.set_xticklabels(days)
+    ax2.set_yticklabels(times)
 
-    plt.title("Time Table", y=1.07)
+    for lec_code in time_table:
+        lec = lecture_list[lec_code]
+        times = time_table[lec_code][0].time
+
+        pivot = 0
+        for t in range(len(times)):
+            if t < len(times)-1:
+                if times[t+1] - times[t] == 1 and times[t]//48 == times[t+1]//48:
+                    continue    #connected time
+
+            day = times[pivot]//48 + 1 # 1,2,3,4,5 -> M,T,W,T,F
+            start = (times[pivot] % 48) * 0.5 + 0.05
+            end = (times[t] % 48 + 1) * 0.5 - 0.05
+
+            # plot time block
+            plt.fill_between([day - 0.48, day + 0.48], [start, start], [end, end], color=lec.color,
+                             edgecolor='k', linewidth=0.5)
+            if len(lec.classes) == 1:
+                plt.text(day, (start + end) * 0.5, str(lec), ha='center', va='center', fontsize=16)
+            else:
+                plt.text(day, (start + end) * 0.5 - 0.2, str(lec), ha='center', va='center', fontsize=16)
+                classes = list(map(str, time_table[lec_code]))
+                sub_title = '(' + (', '.join(classes)) + ')'
+                plt.text(day, (start + end) * 0.5 + 0.2, sub_title, ha='center', va='center', fontsize=12)
+
+            pivot = t+1
+
+    plt.title("{0}st Time Table".format(count), y=1.07, fontsize=21)
+    plt.savefig(result_path+'/{0}.png'.format(count), dpi=200)
     plt.show()
-    #plt.savefig('{0}.png'.format(day_label), dpi=200)
-
-print_table([])
 
 
 # main
 if __name__ == '__main__':
     print(line_string + " 'Scheduler' by 000wan\n" + line_string)
 
-    lecture_list = {}  # 과목코드:Lecture 리스트
-    wb = xlrd.open_workbook('data/2022_가을학기_전체개설과목.xls')
+    data_file = os.listdir('data')
+    if len(data_file):
+        path = 'data/' + data_file[0]
+    else:
+        raise Exception("Data file Not Found!")
+    wb = xlrd.open_workbook(path)
     ws = wb.sheet_by_index(0)
+
+    lecture_list = {}  # 과목코드:Lecture 리스트
     for i in range(2, ws.nrows):
         row = ws.row_values(i)
         code = row[5]
@@ -182,8 +231,8 @@ if __name__ == '__main__':
             credit = complex(float(row[11].split(':')[2]), int(row[10]))
             lecture_list[code] = Lecture(code, row[8], credit, row[:7] + row[8:12])
         # Class 생성
-        time = time_stock(row[17])
-        cls = Class(row[7], row[12], int(row[15]), int(row[16]), time, row[18], row[12:])
+        lec_time = time_stock(row[17])
+        cls = Class(row[7].strip(), row[12], int(row[15]), int(row[16]), lec_time, row[18], row[12:])
         lecture_list[code].classes.append(cls)
 
     '''# test
@@ -202,13 +251,28 @@ if __name__ == '__main__':
     wish_list = choose_lectures(lecture_list)
 
     input_list = necessary_list + wish_list
+    for i, lec in enumerate(input_list):
+        lec.color = colors[i % len(colors)]
+
+    # start search
     result = search(tuple(input_list), tuple(), minimum_credit, necessary_list)
 
-    for i, table in enumerate(result):  # iterating time tables
-        print("%dst Time Table:" % (i + 1))
-        for lecture in table:  # iterating lectures
-            print(lecture, end='    ')
-            for cls in table[lecture]:
-                print(cls, end=',')
-            print()
-        print('\n')
+    result_path = 'result/' + current_time.strftime('%Y-%m-%d %H_%M_%S')
+    if not os.path.exists(result_path):
+        os.makedirs(result_path)
+    if result:
+        for i, table in enumerate(result):  # iterating time tables
+            print_table(i+1, table, lecture_list, result_path)
+
+            # print in terminal
+            '''print("%dst Time Table:" % (i + 1))
+            for lecture in table:  # iterating lectures
+                print(lecture, end='    ')
+                for cls in table[lecture]:
+                    print(cls, end=',')
+                print()
+            print('\n')'''
+
+
+    else:
+        print('No Time Table available!')
