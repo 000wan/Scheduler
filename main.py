@@ -28,6 +28,14 @@ days = ['월', '화', '수', '목', '금', '토', '일']
 colors = matplotlib.cm.get_cmap('Pastel1').colors
 # colors = mcolors.TABLEAU_COLORS
 
+
+def class_building(classroom):
+    if len(classroom):
+        if classroom[0] == '(':
+            building = classroom[1:classroom.index(')')]
+            return building
+    return ''
+
 def time_stock(period):  # lecture time text to int list
     result = list()
     for p in period.split('\r\n'):
@@ -69,6 +77,7 @@ class Class:
         self.enrolled = enrolled  # 수강인원
         self.time = time  # 강의시간 (type:int list)
         self.classroom = classroom  # 강의실
+        self.building = class_building(classroom)  # 강의실 건물
         self.info = info
 
     def __str__(self):
@@ -169,10 +178,11 @@ def print_table(count, time_table, lecture_list, result_path):
         if i%2 == 0:    times.append(i//2)
         else:   times.append('')
 
-    fig = plt.figure(figsize=(10, 15))
+    #fig = plt.figure(figsize=(15, 15)) # 10*15:time-table + 5*15:info
+    fig, axs = plt.subplots(1, 2, figsize=(15, 15), gridspec_kw={'width_ratios': [2, 1]})
 
     # Set Axis
-    ax = plt.axes()
+    ax = axs[0]
     ax.yaxis.grid(linestyle='--', color='gray')
     ax.set_xlim(0.5, len(days) + 0.5)
     ax.set_ylim(24.1, 7.9)
@@ -206,19 +216,23 @@ def print_table(count, time_table, lecture_list, result_path):
             end = (times[t] % 48 + 1) * 0.5 - 0.05
 
             # plot time block
-            plt.fill_between([day - 0.48, day + 0.48], [start, start], [end, end], color=lec.color,
+            axs[0].fill_between([day - 0.48, day + 0.48], [start, start], [end, end], color=lec.color,
                              edgecolor='k', linewidth=0.5)
             if len(lec.classes) == 1:
-                plt.text(day, (start + end) * 0.5, cls.lecture_name, ha='center', va='center', fontsize=15)
+                axs[0].text(day, (start + end) * 0.5, cls.lecture_name, ha='center', va='center', fontsize=15)
             else:
-                plt.text(day, (start + end) * 0.5 - 0.2, cls.lecture_name, ha='center', va='center', fontsize=15)
+                axs[0].text(day, (start + end) * 0.5 - 0.15, cls.lecture_name, ha='center', va='center', fontsize=15)
                 classes = list(map(str, time_table[lec_code]))
                 sub_title = '(' + (', '.join(classes)) + ')'
-                plt.text(day, (start + end) * 0.5 + 0.2, sub_title, ha='center', va='center', fontsize=12)
+                axs[0].text(day, (start + end) * 0.5 + 0.15, sub_title, ha='center', va='center', fontsize=12)
+
+            # class location
+            axs[0].text(day-0.45, end-0.03, cls.building, va='bottom', fontsize=12)
 
             pivot = t+1
 
-    plt.title("{0}st Time Table".format(count), y=1.07, fontsize=21)
+    axs[0].set_title("{0}st Time Table".format(count), y=1.07, fontsize=21)
+
     plt.savefig(result_path+'/{0}.png'.format(count), dpi=200)
     plt.show()
 
