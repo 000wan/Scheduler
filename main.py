@@ -85,6 +85,14 @@ class Class:
         else:   return self.name
 
 
+class TimeTable:
+    def __init__(self, time_table_dict, lecture_list):
+        self.dict = time_table_dict
+        credit = complex(0,0)
+        for lec in time_table_dict:
+            credit += lecture_list[lec].credit
+        self.credit = credit
+
 # 상태:(남은 신청 과목(tuple), 이미 사용한 시간(tuple)) -> 결과:해당 상태에서 가능한 강의 조합 memoization
 memo = {}
 
@@ -171,7 +179,8 @@ def choose_lectures(lecture_list, max_cnt=100):
 
 # time table matplotlib
 # Ref: https://masudakoji.github.io/2015/05/23/generate-timetable-using-matplotlib/en/
-def print_table(count, time_table, lecture_list, result_path):
+def print_table(count, table_object, lecture_list, result_path):
+    time_table = table_object.dict
     days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
     times = list()
     for i in range(16,49):
@@ -233,8 +242,19 @@ def print_table(count, time_table, lecture_list, result_path):
 
     axs[0].set_title("{0}st Time Table".format(count), y=1.07, fontsize=21)
 
+    # Info table
+    table_data = [
+        [int(table_object.credit.real), "학점"],
+        [int(table_object.credit.imag), "AU"]
+    ]
+    table = axs[1].table(cellText=table_data, cellLoc='center', loc='center', edges='open')
+    table.set_fontsize(18)
+    table.scale(0.5, 2)
+    axs[1].axis('off')
+    axs[1].axis('tight')
+
     plt.savefig(result_path+'/{0}.png'.format(count), dpi=200)
-    plt.show()
+    #plt.show()
 
 
 # main
@@ -289,7 +309,8 @@ if __name__ == '__main__':
     if not os.path.exists(result_path):
         os.makedirs(result_path)
     if result:
-        for i, table in enumerate(result):  # iterating time tables
+        for i, dict in enumerate(result):  # iterating time tables
+            table = TimeTable(dict, lecture_list)
             print_table(i+1, table, lecture_list, result_path)
 
             # print in terminal
