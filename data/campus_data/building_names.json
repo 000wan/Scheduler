@@ -1,0 +1,528 @@
+{
+  "N0": {
+    "KR": "\ub3d9\ubb38",
+    "EN": "East Gate",
+    "child": []
+  },
+  "N1": {
+    "KR": "\uae40\ubcd1\ud638\u318d\uae40\uc0bc\uc5f4 IT\uc735\ud569 \ube4c\ub529",
+    "EN": "Kim Beang-Ho & Kim Sam-Youl ITC Building",
+    "child": []
+  },
+  "N2": {
+    "KR": "\ud589\uc815\ubd84\uad00",
+    "EN": "Branch Administration B/D",
+    "child": []
+  },
+  "N3": {
+    "KR": "\uc2a4\ud3ec\uce20 \ucef4\ud50c\ub809\uc2a4",
+    "EN": "Sports Complex",
+    "child": []
+  },
+  "N4": {
+    "KR": "\uc778\ubb38\uc0ac\ud68c\uacfc\ud559\ubd80\ub3d9",
+    "EN": "School of Humanities & Social Science B/D",
+    "child": []
+  },
+  "N5": {
+    "KR": "\uae30\ucd08\uc2e4\ud5d8\uc5f0\uad6c\ub3d9",
+    "EN": "Basic Experiement & Research B/D",
+    "child": []
+  },
+  "N6": {
+    "KR": "\uad50\uc218\ud68c\uad00",
+    "EN": "Faculty Hall",
+    "child": []
+  },
+  "N7": {
+    "KR": "\uae30\uacc4\uacf5\ud559\ub3d9",
+    "EN": "Mechanical Engineering B/D",
+    "child": [
+      "N7-1",
+      "N7-2",
+      "N7-3",
+      "N7-4",
+      "N7-5"
+    ]
+  },
+  "N7-1": {
+    "KR": "\uc6d0\uc790\ub825\ubc0f\uc591\uc790\uacf5\ud559\uacfc",
+    "EN": "Dept. of Nuclear & Quantum Engineering",
+    "child": []
+  },
+  "N7-2": {
+    "KR": "\ud56d\uacf5\uc6b0\uc8fc\uacf5\ud559\uacfc",
+    "EN": "Dept. of Aerospace Engineering",
+    "child": []
+  },
+  "N7-3": {
+    "KR": "\uae30\uacc4\uacf5\ud559\uacfc",
+    "EN": "Dept. of Mechanical Engineering",
+    "child": []
+  },
+  "N7-4": {
+    "KR": "\uae30\uacc4\uacf5\ud559\uacfc",
+    "EN": "Dept. of Mechanical Engineering",
+    "child": []
+  },
+  "N7-5": {
+    "KR": "\uc790\ub3d9\ucc28\uae30\uc220\ub300\ud559\uc6d0 \uc2e4\ud5d8\ub3d9",
+    "EN": "Automobile Technology Laboratory Building",
+    "child": []
+  },
+  "N9": {
+    "KR": "\uc2e4\uc2b5\ub3d9",
+    "EN": "Practice B/D",
+    "child": []
+  },
+  "N10": {
+    "KR": "\uad50\uc591\ubd84\uad00",
+    "EN": "Undergraduate Branch Library",
+    "child": []
+  },
+  "N11": {
+    "KR": "\ud559\uc0dd\uc2dd\ub2f9",
+    "EN": "Cafeteria",
+    "child": []
+  },
+  "N12": {
+    "KR": "\ud559\uc0dd\ud68c\uad00-2",
+    "EN": "Student Center-2",
+    "child": []
+  },
+  "N13": {
+    "KR": "\ud0dc\uc6b8\uad00",
+    "EN": "Tae Wul Gwan",
+    "child": [
+      "N13-1"
+    ]
+  },
+  "N13-1": {
+    "KR": "\uc7a5\uc601\uc2e0 \ud559\uc0dd\ud68c\uad00",
+    "EN": "Chang Young Shin Student Center",
+    "child": []
+  },
+  "N14": {
+    "KR": "\uc0ac\ub791\uad00",
+    "EN": "Sarang Hall",
+    "child": []
+  },
+  "N15": {
+    "KR": "\uad50\uc9c1\uc6d0 \uc219\uc18c",
+    "EN": "Staff Accommodation",
+    "child": []
+  },
+  "N16": {
+    "KR": "\uc18c\ub9dd\uad00",
+    "EN": "Somang Hall",
+    "child": []
+  },
+  "N17": {
+    "KR": "\uc131\uc2e4\uad00",
+    "EN": "Seongsil Hall",
+    "child": []
+  },
+  "N18": {
+    "KR": "\uc9c4\ub9ac\uad00",
+    "EN": "Jilli Hall",
+    "child": []
+  },
+  "N19": {
+    "KR": "\uc544\ub984\uad00",
+    "EN": "Areum Hall",
+    "child": []
+  },
+  "N20": {
+    "KR": "\uc2e0\ub8b0\uad00",
+    "EN": "Silloe Hall",
+    "child": []
+  },
+  "N21": {
+    "KR": "\uc9c0\ud61c\uad00",
+    "EN": "Jihye Hall",
+    "child": []
+  },
+  "N22": {
+    "KR": "\ub3d9\ubb38\ucc3d\uc5c5\uad00",
+    "EN": "Alumni Venture Hall",
+    "child": []
+  },
+  "N23": {
+    "KR": "fMRI\uc13c\ud130",
+    "EN": "fMRI Center",
+    "child": []
+  },
+  "N24": {
+    "KR": "LG\uc774\ub178\ubca0\uc774\uc158\ud640",
+    "EN": "LG Innovation Hall",
+    "child": []
+  },
+  "N25": {
+    "KR": "\uc0b0\uc5c5\ub514\uc790\uc778\ud559\uacfc\ub3d9",
+    "EN": "Dept. of Industrial Design B/D",
+    "child": []
+  },
+  "N26": {
+    "KR": "\uace0\uc131\ub2a5\uc9d1\uc801\uc2dc\uc2a4\ud15c\uc5f0\uad6c\uc13c\ud130",
+    "EN": "Center for High-Performance Integrated Syetems",
+    "child": []
+  },
+  "N27": {
+    "KR": "\uc720\ub808\uce74\uad00",
+    "EN": "Eureka Hall",
+    "child": []
+  },
+  "N28": {
+    "KR": "\uc5d0\ub108\uc9c0\ud658\uacbd\uc5f0\uad6c\uc13c\ud130",
+    "EN": "Energy & Environment Research Center",
+    "child": []
+  },
+  "E1": {
+    "KR": "\uc815\ubb38",
+    "EN": "Main Gate",
+    "child": []
+  },
+  "E2": {
+    "KR": "\uc0b0\uc5c5\uacbd\uc601\ud559\ub3d9",
+    "EN": "Industrial Engineering & Management B/D",
+    "child": [
+      "E2-1",
+      "E2-2"
+    ]
+  },
+  "E2-1": {
+    "KR": "\uc218\ub9ac\uacfc\ud559\uacfc",
+    "EN": "Dept. of Mathematical Sciences",
+    "child": []
+  },
+  "E2-2": {
+    "KR": "\uc0b0\uc5c5\ubc0f\uc2dc\uc2a4\ud15c\uacf5\ud559\uacfc",
+    "EN": "Dept. of Industrial & Systems Engineering",
+    "child": []
+  },
+  "E3": {
+    "KR": "\uc815\ubcf4\uc804\uc790\uacf5\ud559\ub3d9",
+    "EN": "Information & Electronics B/D",
+    "child": [
+      "E3-1",
+      "E3-2",
+      "E3-3",
+      "E3-4"
+    ]
+  },
+  "E3-1": {
+    "KR": "\uc804\uc0b0\ud559\ubd80",
+    "EN": "School of Computing",
+    "child": []
+  },
+  "E3-2": {
+    "KR": "\uc804\uae30\ubc0f\uc804\uc790\uacf5\ud559\ubd80",
+    "EN": "School of Electrical Engineering",
+    "child": []
+  },
+  "E3-3": {
+    "KR": "\ubbf8\ub798\uc735\ud569\uc18c\uc790\ub3d9",
+    "EN": "Device Innovation Facility",
+    "child": []
+  },
+  "E3-4": {
+    "KR": "\uc0c8\ub298\ub3d9",
+    "EN": "Saeneul Dong",
+    "child": []
+  },
+  "E4": {
+    "KR": "KI\ube4c\ub529",
+    "EN": "KAIST Institutes B/D",
+    "child": []
+  },
+  "E5": {
+    "KR": "\uad50\uc9c1\uc6d0\ud68c\uad00",
+    "EN": "Faculty Club",
+    "child": []
+  },
+  "E6": {
+    "KR": "\uc790\uc5f0\uacfc\ud559\ub3d9",
+    "EN": "Natural Science B/D",
+    "child": [
+      "E6-1",
+      "E6-2",
+      "E6-3",
+      "E6-4",
+      "E6-5",
+      "E6-6"
+    ]
+  },
+  "E6-1": {
+    "KR": "\uc218\ub9ac\uacfc\ud559\uacfc",
+    "EN": "Dept. of Mathematical Sciences",
+    "child": []
+  },
+  "E6-2": {
+    "KR": "\ubb3c\ub9ac\ud559\uacfc",
+    "EN": "Dept. of Physics",
+    "child": []
+  },
+  "E6-3": {
+    "KR": "\uc0dd\uba85\uacfc\ud559\uacfc",
+    "EN": "Dept. of Biological Sciences",
+    "child": []
+  },
+  "E6-4": {
+    "KR": "\ud654\ud559\uacfc",
+    "EN": "Dept. of Chemistry",
+    "child": []
+  },
+  "E6-5": {
+    "KR": "\uad81\ub9ac\uc2e4\ud5d8\uad00",
+    "EN": "GoongNi Laboratory Building",
+    "child": []
+  },
+  "E6-6": {
+    "KR": "\uae30\ucd08\uacfc\ud559\ub3d9",
+    "EN": "Basic Science Building",
+    "child": []
+  },
+  "E7": {
+    "KR": "\uc758\uacfc\ud559\uc5f0\uad6c\uc13c\ud130",
+    "EN": "Biomedical Research Center",
+    "child": []
+  },
+  "E8": {
+    "KR": "\uc138\uc885\uad00",
+    "EN": "Sejong Hall",
+    "child": []
+  },
+  "E9": {
+    "KR": "\ud559\uc220\ubb38\ud654\uad00",
+    "EN": "Academic Cultural Complex",
+    "child": []
+  },
+  "E10": {
+    "KR": "\uc911\uc559\ucc3d\uace0",
+    "EN": "Storehouse",
+    "child": []
+  },
+  "E11": {
+    "KR": "\ucc3d\uc758\ud559\uc2b5\uad00",
+    "EN": "Creative Learning B/D",
+    "child": []
+  },
+  "E12": {
+    "KR": "\uc911\uc559\uae30\uacc4\uc2e4",
+    "EN": "Energy Plant",
+    "child": []
+  },
+  "E13": {
+    "KR": "\uc778\uacf5\uc704\uc131\uc5f0\uad6c\uc13c\ud130",
+    "EN": "Satellite Technology Research Center",
+    "child": []
+  },
+  "E14": {
+    "KR": "\ubcf8\uad00",
+    "EN": "Main Administration B/D",
+    "child": []
+  },
+  "E15": {
+    "KR": "\ub300\uac15\ub2f9",
+    "EN": "Auditorium",
+    "child": []
+  },
+  "E16": {
+    "KR": "\uc815\ubb38\uc220\ube4c\ub529",
+    "EN": "ChungMoonSoul B/D",
+    "child": [
+      "E16-1"
+    ]
+  },
+  "E16-1": {
+    "KR": "\uc591\ubd84\uc21c\ube4c\ub529",
+    "EN": "YANG Bun Soon B/D",
+    "child": []
+  },
+  "E17": {
+    "KR": "\uc6b4\ub3d9\uc7a5",
+    "EN": "Stadium",
+    "child": []
+  },
+  "E18": {
+    "KR": "\ub300\uc804\uc9c8\ud658\ubaa8\ub378\ub3d9\ubb3c\uc13c\ud130",
+    "EN": "Daejeon Disease-model Animal Center",
+    "child": [
+      "E18-1"
+    ]
+  },
+  "E18-1": {
+    "KR": "\ubc14\uc774\uc624\ubaa8\ub378 \uc2dc\uc2a4\ud15c\ud30c\ud06c",
+    "EN": "Bio Model System Park",
+    "child": []
+  },
+  "E19": {
+    "KR": "KAIST \ubd80\uc124 \ub098\ub178\uc885\ud569\uae30\uc220\uc6d0",
+    "EN": "National Nano Fab Center",
+    "child": []
+  },
+  "E20": {
+    "KR": "\uacc4\ub8e1\uad00",
+    "EN": "Kyeryong Hall",
+    "child": []
+  },
+  "E21": {
+    "KR": "\uce74\uc774\uc2a4\ud2b8 \ud074\ub9ac\ub2c9",
+    "EN": "KAIST Clinic",
+    "child": []
+  },
+  "W1": {
+    "KR": "\uc751\uc6a9\uacf5\ud559\ub3d9",
+    "EN": "Applied Engineering B/D",
+    "child": [
+      "W1-1",
+      "W1-2",
+      "W1-3"
+    ]
+  },
+  "W1-1": {
+    "KR": "\uc2e0\uc18c\uc7ac\uacf5\ud559\uacfc",
+    "EN": "Dept. of Materials Science & Engineering",
+    "child": []
+  },
+  "W1-2": {
+    "KR": "\uac74\uc124\ubc0f\ud658\uacbd\uacf5\ud559\uacfc",
+    "EN": "Dept. of Civil & Environmental Engineering",
+    "child": []
+  },
+  "W1-3": {
+    "KR": "\uc0dd\uba85\ud654\ud559\uacf5\ud559\uacfc",
+    "EN": "Dept. of Chemical & Biomolecular Engineering",
+    "child": []
+  },
+  "W2": {
+    "KR": "\ud559\uc0dd\ud68c\uad00-1",
+    "EN": "Student Center-1",
+    "child": [
+      "W2-1"
+    ]
+  },
+  "W2-1": {
+    "KR": "\uc778\ud130\ub0b4\uc154\ub110\uc13c\ud130",
+    "EN": "International Center",
+    "child": []
+  },
+  "W3": {
+    "KR": "\uac08\ub9b4\ub808\uc774\uad00",
+    "EN": "Galilei Hall",
+    "child": []
+  },
+  "W4": {
+    "KR": "",
+    "EN": "",
+    "child": [
+      "W4-1",
+      "W4-2",
+      "W4-3",
+      "W4-4"
+    ]
+  },
+  "W4-1": {
+    "KR": "\uc5ec\uc6b8\uad00",
+    "EN": "Yeoul Hall",
+    "child": []
+  },
+  "W4-2": {
+    "KR": "\ub098\ub4e4\uad00",
+    "EN": "Nadl Hall",
+    "child": []
+  },
+  "W4-3": {
+    "KR": "\ub2e4\uc19c\uad00",
+    "EN": "Dasom Hall",
+    "child": []
+  },
+  "W4-4": {
+    "KR": "\ud76c\ub9dd\uad00",
+    "EN": "Heemang Hall",
+    "child": []
+  },
+  "W5": {
+    "KR": "",
+    "EN": "",
+    "child": [
+      "W5-1",
+      "W5-2",
+      "W5-3",
+      "W5-4",
+      "W5-5"
+    ]
+  },
+  "W5-1": {
+    "KR": "\uae30\ud63c\uc790\uae30\uc219\uc0ac",
+    "EN": "Married Students Housing",
+    "child": []
+  },
+  "W5-2": {
+    "KR": "\uc2a4\ud0c0\ud2b8\uc5c5\ube4c\ub9ac\uc9c0",
+    "EN": "Startup Village",
+    "child": []
+  },
+  "W5-3": {
+    "KR": "\uc778\ud130\ub0b4\uc154\ub110\ube4c\ub9ac\uc9c0 C",
+    "EN": "International Village C",
+    "child": []
+  },
+  "W5-4": {
+    "KR": "\uc778\ud130\ub0b4\uc154\ub110\ube4c\ub9ac\uc9c0 A",
+    "EN": "International Village A",
+    "child": []
+  },
+  "W5-5": {
+    "KR": "\uc778\ud130\ub0b4\uc154\ub110\ube4c\ub9ac\uc9c0 B",
+    "EN": "International Village B",
+    "child": []
+  },
+  "W6": {
+    "KR": "\ubbf8\ub974\uad00",
+    "EN": "Mir Hall",
+    "child": []
+  },
+  "W7": {
+    "KR": "\ub098\ub214\uad00",
+    "EN": "Nanum Hall",
+    "child": []
+  },
+  "W8": {
+    "KR": "\uad50\uc721\uc9c0\uc6d0\ub3d9",
+    "EN": "Educational Support B/D",
+    "child": [
+      "W8-1"
+    ]
+  },
+  "W8-1": {
+    "KR": "\uc911\uc559\ubd84\uc11d\uc13c\ud130",
+    "EN": "Analysis Center for Research Advancement",
+    "child": []
+  },
+  "W9": {
+    "KR": "\ub178\ucc9c\uadf9\uc7a5",
+    "EN": "Outdoor Theater",
+    "child": []
+  },
+  "W10": {
+    "KR": "\ud48d\ub3d9\uc2e4\ud5d8\uc2e4",
+    "EN": "Wind Tunnel Laboratory",
+    "child": []
+  },
+  "W11": {
+    "KR": "\uc678\uad6d\uc778\uad50\uc218 \uc544\ud30c\ud2b8",
+    "EN": "International Faculty Apartment",
+    "child": []
+  },
+  "W12": {
+    "KR": "\uc11c\uce21\uae30\uacc4\uc2e4",
+    "EN": "West Energy Plant",
+    "child": []
+  },
+  "W16": {
+    "KR": "\uc9c0\uc624\uc13c\ud2b8\ub9ac\ud4e8\uc9c0 \uc2e4\ud5d8\ub3d9",
+    "EN": "Geotechnical Centrifuge Testing Center",
+    "child": []
+  }
+}

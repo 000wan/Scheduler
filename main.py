@@ -28,6 +28,7 @@ days = ['월', '화', '수', '목', '금', '토', '일']
 colors = matplotlib.cm.get_cmap('Pastel1').colors
 # colors = mcolors.TABLEAU_COLORS
 
+lecture_list = {}  # 과목코드:Lecture 리스트
 
 def class_building(classroom):
     if len(classroom):
@@ -57,28 +58,28 @@ def time_stock(period):  # lecture time text to int list
 class Lecture:
     color = None
 
-    def __init__(self, code, name, credit, info):
+    def __init__(self, code, lecture_name, credit, lecture_info):
         self.code = code  # 과목번호
-        self.name = name  # 과목명
+        self.lecture_name = lecture_name  # 과목명
         self.credit = credit  # 학점 (z=학점+AU*i)
         self.classes = []  # 분반
-        self.info = info
+        self.lecture_info = lecture_info
 
     def __str__(self):
         return self.code
 
 
 class Class:
-    def __init__(self, name, lecture_name, professor, capacity, enrolled, time, classroom, info):
+    def __init__(self, name, lecture_name, professor, capacity, enrolled, lecture_time, classroom, class_info):
         self.name = name  # 분반명
-        self.lecture_name = lecture_name
+        self.lecture_name = lecture_name  # 강의명
         self.professor = professor  # 담당교수
         self.capacity = capacity  # 정원
         self.enrolled = enrolled  # 수강인원
-        self.time = time  # 강의시간 (type:int list)
+        self.lecture_time = lecture_time  # 강의시간 (type:int list)
         self.classroom = classroom  # 강의실
         self.building = class_building(classroom)  # 강의실 건물
-        self.info = info
+        self.class_info = class_info
 
     def __str__(self):
         if self.name == '': return 'Staff'
@@ -86,7 +87,7 @@ class Class:
 
 
 class TimeTable:
-    def __init__(self, time_table_dict, lecture_list):
+    def __init__(self, time_table_dict):
         self.dict = time_table_dict
         credit = complex(0,0)
         for lec in time_table_dict:
@@ -121,8 +122,8 @@ def search(enroll_list, used_time, remain_credit, necessary_list):
 
     lec = enroll_list[0]
     for cls in lec.classes:
-        if len(set(used_time) & set(cls.time)) == 0:
-            new_used_time = list(set(used_time) | set(cls.time))
+        if len(set(used_time) & set(cls.lecture_time)) == 0:
+            new_used_time = list(set(used_time) | set(cls.lecture_time))
             new_used_time.sort()
 
             new_necessary_list = list(necessary_list)
@@ -141,7 +142,7 @@ def search(enroll_list, used_time, remain_credit, necessary_list):
 
                             # check same-time and same-name classes
                             if recorded == i and not rec_lec is None:
-                                if rec_lec[0].time == cls.time and rec_lec[0].lecture_name == cls.lecture_name:
+                                if rec_lec[0].lecture_time == cls.lecture_time and rec_lec[0].lecture_name == cls.lecture_name:
                                     if cls not in rec_lec:
                                         j[str(lec)].append(cls)
                                     flag = False
@@ -161,7 +162,7 @@ def search(enroll_list, used_time, remain_credit, necessary_list):
     return memo[enroll_list][used_time]
 
 
-def choose_lectures(lecture_list, max_cnt=100):
+def choose_lectures(max_cnt=100):
     res = []
     cnt = 0
     while cnt < max_cnt:
@@ -179,7 +180,7 @@ def choose_lectures(lecture_list, max_cnt=100):
 
 # time table matplotlib
 # Ref: https://masudakoji.github.io/2015/05/23/generate-timetable-using-matplotlib/en/
-def print_table(count, table_object, lecture_list, result_path):
+def print_table(count, table_object, result_path):
     time_table = table_object.dict
     days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
     times = list()
@@ -212,7 +213,7 @@ def print_table(count, table_object, lecture_list, result_path):
     for lec_code in time_table:
         lec = lecture_list[lec_code]
         cls = time_table[lec_code][0]
-        times = cls.time
+        times = cls.lecture_time
 
         pivot = 0
         for t in range(len(times)):
@@ -253,23 +254,31 @@ def print_table(count, table_object, lecture_list, result_path):
     axs[1].axis('off')
     axs[1].axis('tight')
 
-    plt.savefig(result_path+'/{0}.png'.format(count), dpi=200)
-    #plt.show()
+    '''if not os.path.exists(result_path):
+        os.makedirs(result_path)
+    plt.savefig(result_path+'/{0}.png'.format(count), dpi=200)'''
+    plt.show()
 
 
 # main
 if __name__ == '__main__':
     print(line_string + " 'Scheduler' by 000wan\n" + line_string)
 
+    path = ""
     data_file = os.listdir('data')
     if len(data_file):
-        path = 'data/' + data_file[0]
+        for i in range(len(data_file)):
+            path = 'data/' + data_file[i]
+            if os.path.isfile(path) and path.endswith('.xls'):
+                break
+
+            if i == len(data_file)-1:
+                raise Exception("Data File Not Found!\n\tFollow the instruction in 'data/README.md' to download the Data File.")
     else:
-        raise Exception("Data file Not Found!")
+        raise Exception("Data File Not Found!\n\tFollow the instruction in 'data/README.md' to download the Data File.")
     wb = xlrd.open_workbook(path)
     ws = wb.sheet_by_index(0)
 
-    lecture_list = {}  # 과목코드:Lecture 리스트
     for i in range(2, ws.nrows):
         row = ws.row_values(i)
         code = row[5]
@@ -283,20 +292,15 @@ if __name__ == '__main__':
         cls = Class(row[7].strip(), row[8], row[12], int(row[15]), int(row[16]), lec_time, row[18], row[12:])
         lecture_list[code].classes.append(cls)
 
-    '''# test
-    for i in lecture_list.values():
-        print(i.code, i.name, i.credit)
-        for j in i.classes:
-            print(j.name, j.professor, j.capacity, j.enrolled, j.time, j.classroom)'''
 
     # user_input
     minimum_credit = int(input("0. 최소 희망 학점: "))
 
     print('1. 필수 수강 과목번호 입력:')
-    necessary_list = choose_lectures(lecture_list)
+    necessary_list = choose_lectures()
 
     print('2. 수강 희망 과목번호 입력')
-    wish_list = choose_lectures(lecture_list)
+    wish_list = choose_lectures()
 
     input_list = necessary_list + wish_list
     for i, lec in enumerate(input_list):
@@ -306,12 +310,10 @@ if __name__ == '__main__':
     result = search(tuple(input_list), tuple(), minimum_credit, necessary_list)
 
     result_path = 'result/' + current_time.strftime('%Y-%m-%d %H_%M_%S')
-    if not os.path.exists(result_path):
-        os.makedirs(result_path)
     if result:
         for i, dict in enumerate(result):  # iterating time tables
-            table = TimeTable(dict, lecture_list)
-            print_table(i+1, table, lecture_list, result_path)
+            table = TimeTable(dict)
+            print_table(i+1, table, result_path)
 
             # print in terminal
             '''print("%dst Time Table:" % (i + 1))
