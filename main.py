@@ -21,7 +21,6 @@ font = font_manager.FontProperties(fname=font_path).get_name()
 rc('font', family=font)
 
 import os
-import xlrd
 import time as current_time
 
 # import data folder
@@ -257,37 +256,27 @@ def search(enroll_list, used_time, remain_credit, necessary_list):
 
 # load 'total courses' data
 def load_lecture_data(data_folder):
-    path = ""
-    data_file = os.listdir(data_folder)
-    if len(data_file):
-        for i in range(len(data_file)):
-            path = data_folder + '/' + data_file[i]
-            if os.path.isfile(path) and path.endswith('.xls'):
-                break
+    json_path = data_folder + "/lecture_list.json"
 
-            if i == len(data_file) - 1:
-                raise Exception(
-                    "Data File Not Found!\n\tFollow the instruction in 'data/README.md' to download the Data File.")
-    else:
-        raise Exception("Data File Not Found!\n\tFollow the instruction in 'data/README.md' to download the Data File.")
+    if not os.path.exists(json_path):
+        data.read_lecture_data("data")  # lecture_data_generator.py
 
-    wb = xlrd.open_workbook(path)
-    ws = wb.sheet_by_index(0)
+    with open(json_path) as f:
+        ldat = data.json.load(f)
 
     lecture_list = {}
 
-    for i in range(2, ws.nrows):
-        row = ws.row_values(i)
-        code = row[5]
-
+    for code in ldat:
         # Lecture 생성
-        if not code in lecture_list.keys():
-            credit = complex(float(row[11].split(':')[2]), int(row[10]))
-            lecture_list[code] = Lecture(code, row[8], credit, row[:7] + row[8:12])
-        # Class 생성
-        lec_time = time_stock(row[17])
-        cls = Class(row[7].strip(), row[8], row[12], int(row[15]), int(row[16]), lec_time, row[18], row[12:])
-        lecture_list[code].classes.append(cls)
+        lec = ldat[code]
+        credit = complex(lec["credit"][0], lec["credit"][1])
+        lecture_list[code] = Lecture(code, lec["lecture_name"], credit, lec["lecture_info"])
+
+        for cls in lec["classes"]:
+            # Class 생성
+            lec_time = time_stock(cls["lecture_time"])
+            new_cls = Class(cls["name"], cls["lecture_name"], cls["professor"], cls["capacity"], cls["enrolled"], lec_time, cls["classroom"], cls["class_info"])
+            lecture_list[code].classes.append(new_cls)
 
     return lecture_list
 
@@ -330,7 +319,7 @@ if __name__ == '__main__':
     print(line_string + " 'Scheduler' by 000wan\n" + line_string)
 
     # load data; folder location: './data'
-    lecture_list = load_lecture_data("data")
+    lecture_list = load_lecture_data("data/lecture_data")
 
     # user_input
     minimum_credit = int(input("0. 최소 희망 학점: "))

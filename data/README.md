@@ -8,7 +8,9 @@ You can download the data file at:
 
     KAIST portal / KAIST Academic System / Total Opening Course
 
+### * data/lecture_data
 
+Load and save obtained lecture data. 
 
 ### * data/campus_data
 
