@@ -7,6 +7,7 @@
 #    2022/08/09 : Development starts with python
 #    2022/08/10 ~ 2022/08/14 : Search algorithm using dp complete
 #    2022/08/15 ~ 2022/08/22 : Generate time-table image
+#    200/08/29 ~ :
 #
 
 import matplotlib
@@ -23,10 +24,12 @@ import os
 import xlrd
 import time as current_time
 
+# import data folder
+import data
+
 line_string = "=========================\n"
 days = ['월', '화', '수', '목', '금', '토', '일']
-colors = matplotlib.cm.get_cmap('Pastel1').colors
-# colors = mcolors.TABLEAU_COLORS
+colors = matplotlib.cm.get_cmap('Pastel1').colors + matplotlib.cm.get_cmap('Pastel2').colors    # Pastel colors
 
 lecture_list = {}  # 과목코드:Lecture 리스트
 
@@ -252,7 +255,7 @@ def search(enroll_list, used_time, remain_credit, necessary_list):
     memo[enroll_list][used_time] = res
     return memo[enroll_list][used_time]
 
-
+# load 'total courses' data
 def load_lecture_data(data_folder):
     path = ""
     data_file = os.listdir(data_folder)
@@ -287,6 +290,24 @@ def load_lecture_data(data_folder):
         lecture_list[code].classes.append(cls)
 
     return lecture_list
+
+
+# load campus building names (json)
+def load_campus_data(data_folder):
+    json_path = data_folder + "/building_names.json"
+
+    if not os.path.exists(json_path):
+        txt_path = data_folder + "/row_data.txt"
+        if not os.path.exists(txt_path):
+            raise Exception("Campus Data Not Found!")
+        else:
+            data.generate_json(data_folder, txt_path)    # txt_to_json.py
+
+    with open(json_path) as f:
+        building_list = data.json.load(f)
+
+    return building_list
+
 
 def choose_lectures(max_cnt=100):
     res = []

@@ -3,7 +3,7 @@
 import json
 
 
-def generate_json(row_data_path):
+def generate_json(data_folder, row_data_path):
     with open(row_data_path, 'r', encoding="UTF-8") as f:
         lines = f.readlines()
         result = {}
@@ -35,7 +35,7 @@ def generate_json(row_data_path):
 
             result[building_code] = {"KR": building_name_KR, "EN": building_name_EN, 'child': []}
 
-    with open('building_names.json', 'w') as f:
+    with open(data_folder+'/building_names.json', 'w') as f:
         json.dump(result, f, indent=2)
 
 
