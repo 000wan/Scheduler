@@ -94,6 +94,97 @@ class TimeTable:
             credit += lecture_list[lec].credit
         self.credit = credit
 
+    def print_table(self, count, result_path):
+        # time table matplotlib
+        # Ref: https://masudakoji.github.io/2015/05/23/generate-timetable-using-matplotlib/en/
+
+        time_table = self.dict
+        days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
+        times = list()
+        for i in range(16, 49):
+            if i % 2 == 0:
+                times.append(i // 2)
+            else:
+                times.append('')
+
+        # fig = plt.figure(figsize=(15, 15)) # 10*15:time-table + 5*15:info
+        fig, axs = plt.subplots(1, 2, figsize=(15, 15), gridspec_kw={'width_ratios': [2, 1]})
+
+        # Set Axis
+        ax = axs[0]
+        ax.yaxis.grid(linestyle='--', color='gray')
+        ax.set_xlim(0.5, len(days) + 0.5)
+        ax.set_ylim(24.1, 7.9)
+        ax.set_xticks(range(1, len(days) + 1))
+        ax.set_yticks(list(map(lambda x: x / 2, range(16, 49))))
+        ax.set_xticklabels(days)
+        ax.set_yticklabels(times)
+
+        # Set Second Axis
+        ax2 = ax.twiny().twinx()
+        ax2.set_xlim(ax.get_xlim())
+        ax2.set_ylim(ax.get_ylim())
+        ax2.set_xticks(ax.get_xticks())
+        ax2.set_yticks(ax.get_yticks())
+        ax2.set_xticklabels(days)
+        ax2.set_yticklabels(times)
+
+        for lec_code in time_table:
+            lec = lecture_list[lec_code]
+            cls = time_table[lec_code][0]
+            times = cls.lecture_time
+
+            pivot = 0
+            for t in range(len(times)):
+                if t < len(times) - 1:
+                    if times[t + 1] - times[t] == 1 and times[t] // 48 == times[t + 1] // 48:
+                        continue  # connected time
+
+                day = times[pivot] // 48 + 1  # 1,2,3,4,5 -> M,T,W,T,F
+                start = (times[pivot] % 48) * 0.5 + 0.05
+                end = (times[t] % 48 + 1) * 0.5 - 0.05
+
+                # plot time block
+                axs[0].fill_between([day - 0.48, day + 0.48], [start, start], [end, end], color=lec.color,
+                                    edgecolor='k', linewidth=0.5)
+                if len(lec.classes) == 1:
+                    # only title
+                    # axs[0].text(day, (start + end) * 0.5, cls.lecture_name, ha='center', va='center', fontsize=15)
+                    axs[0].text(day, (start + end) * 0.5 - 0.15, cls.lecture_name, ha='center', va='center',
+                                fontsize=15)
+                    sub_title = '(' + cls.professor + ')'
+                    axs[0].text(day, (start + end) * 0.5 + 0.15, sub_title, ha='center', va='center', fontsize=11)
+                else:
+                    axs[0].text(day, (start + end) * 0.5 - 0.15, cls.lecture_name, ha='center', va='center',
+                                fontsize=15)
+                    classes = list(map(str, time_table[lec_code]))
+                    sub_title = '(' + (', '.join(classes)) + ')'
+                    axs[0].text(day, (start + end) * 0.5 + 0.15, sub_title, ha='center', va='center', fontsize=12)
+
+                # class location
+                axs[0].text(day - 0.45, end - 0.03, cls.building, va='bottom', fontsize=12)
+
+                pivot = t + 1
+
+        axs[0].set_title("{0}st Time Table".format(count), y=1.07, fontsize=21)
+
+        # Info table
+        table_data = [
+            [int(self.credit.real), "학점"],
+            [int(self.credit.imag), "AU"]
+        ]
+        table = axs[1].table(cellText=table_data, cellLoc='center', loc='center', edges='open')
+        table.set_fontsize(18)
+        table.scale(0.5, 2)
+        axs[1].axis('off')
+        axs[1].axis('tight')
+
+        '''if not os.path.exists(result_path):
+            os.makedirs(result_path)
+        plt.savefig(result_path+'/{0}.png'.format(count), dpi=200)'''
+        plt.show()
+
+
 # 상태:(남은 신청 과목(tuple), 이미 사용한 시간(tuple)) -> 결과:해당 상태에서 가능한 강의 조합 memoization
 memo = {}
 
@@ -162,6 +253,41 @@ def search(enroll_list, used_time, remain_credit, necessary_list):
     return memo[enroll_list][used_time]
 
 
+def load_lecture_data(data_folder):
+    path = ""
+    data_file = os.listdir(data_folder)
+    if len(data_file):
+        for i in range(len(data_file)):
+            path = data_folder + '/' + data_file[i]
+            if os.path.isfile(path) and path.endswith('.xls'):
+                break
+
+            if i == len(data_file) - 1:
+                raise Exception(
+                    "Data File Not Found!\n\tFollow the instruction in 'data/README.md' to download the Data File.")
+    else:
+        raise Exception("Data File Not Found!\n\tFollow the instruction in 'data/README.md' to download the Data File.")
+
+    wb = xlrd.open_workbook(path)
+    ws = wb.sheet_by_index(0)
+
+    lecture_list = {}
+
+    for i in range(2, ws.nrows):
+        row = ws.row_values(i)
+        code = row[5]
+
+        # Lecture 생성
+        if not code in lecture_list.keys():
+            credit = complex(float(row[11].split(':')[2]), int(row[10]))
+            lecture_list[code] = Lecture(code, row[8], credit, row[:7] + row[8:12])
+        # Class 생성
+        lec_time = time_stock(row[17])
+        cls = Class(row[7].strip(), row[8], row[12], int(row[15]), int(row[16]), lec_time, row[18], row[12:])
+        lecture_list[code].classes.append(cls)
+
+    return lecture_list
+
 def choose_lectures(max_cnt=100):
     res = []
     cnt = 0
@@ -178,120 +304,12 @@ def choose_lectures(max_cnt=100):
     return res
 
 
-# time table matplotlib
-# Ref: https://masudakoji.github.io/2015/05/23/generate-timetable-using-matplotlib/en/
-def print_table(count, table_object, result_path):
-    time_table = table_object.dict
-    days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
-    times = list()
-    for i in range(16,49):
-        if i%2 == 0:    times.append(i//2)
-        else:   times.append('')
-
-    #fig = plt.figure(figsize=(15, 15)) # 10*15:time-table + 5*15:info
-    fig, axs = plt.subplots(1, 2, figsize=(15, 15), gridspec_kw={'width_ratios': [2, 1]})
-
-    # Set Axis
-    ax = axs[0]
-    ax.yaxis.grid(linestyle='--', color='gray')
-    ax.set_xlim(0.5, len(days) + 0.5)
-    ax.set_ylim(24.1, 7.9)
-    ax.set_xticks(range(1, len(days) + 1))
-    ax.set_yticks(list(map(lambda x: x/2, range(16, 49))))
-    ax.set_xticklabels(days)
-    ax.set_yticklabels(times)
-
-    # Set Second Axis
-    ax2 = ax.twiny().twinx()
-    ax2.set_xlim(ax.get_xlim())
-    ax2.set_ylim(ax.get_ylim())
-    ax2.set_xticks(ax.get_xticks())
-    ax2.set_yticks(ax.get_yticks())
-    ax2.set_xticklabels(days)
-    ax2.set_yticklabels(times)
-
-    for lec_code in time_table:
-        lec = lecture_list[lec_code]
-        cls = time_table[lec_code][0]
-        times = cls.lecture_time
-
-        pivot = 0
-        for t in range(len(times)):
-            if t < len(times)-1:
-                if times[t+1] - times[t] == 1 and times[t]//48 == times[t+1]//48:
-                    continue    #connected time
-
-            day = times[pivot]//48 + 1 # 1,2,3,4,5 -> M,T,W,T,F
-            start = (times[pivot] % 48) * 0.5 + 0.05
-            end = (times[t] % 48 + 1) * 0.5 - 0.05
-
-            # plot time block
-            axs[0].fill_between([day - 0.48, day + 0.48], [start, start], [end, end], color=lec.color,
-                             edgecolor='k', linewidth=0.5)
-            if len(lec.classes) == 1:
-                axs[0].text(day, (start + end) * 0.5, cls.lecture_name, ha='center', va='center', fontsize=15)
-            else:
-                axs[0].text(day, (start + end) * 0.5 - 0.15, cls.lecture_name, ha='center', va='center', fontsize=15)
-                classes = list(map(str, time_table[lec_code]))
-                sub_title = '(' + (', '.join(classes)) + ')'
-                axs[0].text(day, (start + end) * 0.5 + 0.15, sub_title, ha='center', va='center', fontsize=12)
-
-            # class location
-            axs[0].text(day-0.45, end-0.03, cls.building, va='bottom', fontsize=12)
-
-            pivot = t+1
-
-    axs[0].set_title("{0}st Time Table".format(count), y=1.07, fontsize=21)
-
-    # Info table
-    table_data = [
-        [int(table_object.credit.real), "학점"],
-        [int(table_object.credit.imag), "AU"]
-    ]
-    table = axs[1].table(cellText=table_data, cellLoc='center', loc='center', edges='open')
-    table.set_fontsize(18)
-    table.scale(0.5, 2)
-    axs[1].axis('off')
-    axs[1].axis('tight')
-
-    '''if not os.path.exists(result_path):
-        os.makedirs(result_path)
-    plt.savefig(result_path+'/{0}.png'.format(count), dpi=200)'''
-    plt.show()
-
-
 # main
 if __name__ == '__main__':
     print(line_string + " 'Scheduler' by 000wan\n" + line_string)
 
-    path = ""
-    data_file = os.listdir('data')
-    if len(data_file):
-        for i in range(len(data_file)):
-            path = 'data/' + data_file[i]
-            if os.path.isfile(path) and path.endswith('.xls'):
-                break
-
-            if i == len(data_file)-1:
-                raise Exception("Data File Not Found!\n\tFollow the instruction in 'data/README.md' to download the Data File.")
-    else:
-        raise Exception("Data File Not Found!\n\tFollow the instruction in 'data/README.md' to download the Data File.")
-    wb = xlrd.open_workbook(path)
-    ws = wb.sheet_by_index(0)
-
-    for i in range(2, ws.nrows):
-        row = ws.row_values(i)
-        code = row[5]
-
-        # Lecture 생성
-        if not code in lecture_list.keys():
-            credit = complex(float(row[11].split(':')[2]), int(row[10]))
-            lecture_list[code] = Lecture(code, row[8], credit, row[:7] + row[8:12])
-        # Class 생성
-        lec_time = time_stock(row[17])
-        cls = Class(row[7].strip(), row[8], row[12], int(row[15]), int(row[16]), lec_time, row[18], row[12:])
-        lecture_list[code].classes.append(cls)
-
+    # load data; folder location: './data'
+    lecture_list = load_lecture_data("data")
 
     # user_input
     minimum_credit = int(input("0. 최소 희망 학점: "))
@@ -302,6 +320,7 @@ if __name__ == '__main__':
     print('2. 수강 희망 과목번호 입력')
     wish_list = choose_lectures()
 
+    # lecture block color decision
     input_list = necessary_list + wish_list
     for i, lec in enumerate(input_list):
         lec.color = colors[i % len(colors)]
@@ -313,7 +332,7 @@ if __name__ == '__main__':
     if result:
         for i, dict in enumerate(result):  # iterating time tables
             table = TimeTable(dict)
-            print_table(i+1, table, result_path)
+            table.print_table(i+1, result_path)
 
             # print in terminal
             '''print("%dst Time Table:" % (i + 1))
@@ -323,7 +342,5 @@ if __name__ == '__main__':
                     print(cls, end=',')
                 print()
             print('\n')'''
-
-
     else:
         print('No Time Table available!')
