@@ -186,10 +186,10 @@ class TimeTable:
         axs[1].axis('off')
         axs[1].axis('tight')
 
-        '''if not os.path.exists(result_path):
+        if not os.path.exists(result_path):
             os.makedirs(result_path)
-        plt.savefig(result_path+'/{0}.png'.format(count), dpi=200)'''
-        plt.show()
+        plt.savefig(result_path+'/{0}.png'.format(count), dpi=200)
+        #plt.show()
 
 
 # 상태:(남은 신청 과목(tuple), 이미 사용한 시간(tuple)) -> 결과:해당 상태에서 가능한 강의 조합 memoization
