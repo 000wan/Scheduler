@@ -1,23 +1,24 @@
-# =========================
+ =========================
 #  'Scheduler' by 000wan
 # =========================
 # Description :
 #    University Schedule Generator
 # History :
-#    2022/08/09 : Development starts with python
-#    2022/08/10 ~ 2022/08/14 : Search algorithm using dp complete
-#    2022/08/15 ~ 2022/08/22 : Generate time-table image
-#    200/08/29 ~ :
+#    2022/08/09 : Start development with python
+#    2022/08/10 ~ 2022/08/14 : Complete search algorithm using dp
+#    2022/08/15 ~ 2022/08/29 : Generate ime-table image
+#    2022/08/31 ~ 2022/09/07 : Enhance OOP
+#    2022/09/07 ~ Current : Add new feature: distance among buildings
 #
 
 import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
 
 # Korean Font 'malgun gothic' loaded
 from matplotlib import font_manager, rc
 font_path = "C:/Windows/Fonts/malgun.ttf"
-font = font_manager.FontProperties(fname=font_path).get_name()
+try:    font = font_manager.FontProperties(fname=font_path).get_name()
+except: raise Exception("Korean Font 'Malgun Gothic' required in 'C:/Windows/Fonts/malgun.ttf'")
 rc('font', family=font)
 
 import os
@@ -31,6 +32,7 @@ days = ['월', '화', '수', '목', '금', '토', '일']
 colors = matplotlib.cm.get_cmap('Pastel1').colors + matplotlib.cm.get_cmap('Pastel2').colors    # Pastel colors
 
 lecture_list = {}  # 과목코드:Lecture 리스트
+building_data = {}  # 건물번호:data
 
 def class_building(classroom):
     if len(classroom):
@@ -164,6 +166,9 @@ class TimeTable:
                     axs[0].text(day, (start + end) * 0.5 + 0.15, sub_title, ha='center', va='center', fontsize=12)
 
                 # class location
+                '''bottom_title = '(' + cls.building + ')'
+                if cls.building in building_data.keys():
+                    bottom_title += building_data[cls.building]['KR']''' # KR building name
                 axs[0].text(day - 0.45, end - 0.03, cls.building, va='bottom', fontsize=12)
 
                 pivot = t + 1
@@ -254,6 +259,13 @@ def search(enroll_list, used_time, remain_credit, necessary_list):
     memo[enroll_list][used_time] = res
     return memo[enroll_list][used_time]
 
+#
+# Ref : https://api.ncloud-docs.com/docs/
+#       https://velog.io/@choonsik_mom/Naver-API%EB%A1%9C-%EA%B8%B8%EC%B0%BE%EA%B8%B0with-python
+def find_route():
+    pass
+
+
 # load 'total courses' data
 def load_lecture_data(data_folder):
     json_path = data_folder + "/lecture_list.json"
@@ -280,17 +292,16 @@ def load_lecture_data(data_folder):
 
     return lecture_list
 
-
 # load campus building names (json)
 def load_campus_data(data_folder):
-    json_path = data_folder + "/building_names.json"
+    json_path = data_folder + "/building_data.json"
 
     if not os.path.exists(json_path):
         txt_path = data_folder + "/row_data.txt"
         if not os.path.exists(txt_path):
             raise Exception("Campus Data Not Found!")
         else:
-            data.generate_json(data_folder, txt_path)    # txt_to_json.py
+            data.generate_json(data_folder, data.read_txt(txt_path))    # load_building_data.py
 
     with open(json_path) as f:
         building_list = data.json.load(f)
@@ -318,8 +329,9 @@ def choose_lectures(max_cnt=100):
 if __name__ == '__main__':
     print(line_string + " 'Scheduler' by 000wan\n" + line_string)
 
-    # load data; folder location: './data'
+    # load data; folder location: './data/lecture_data'
     lecture_list = load_lecture_data("data/lecture_data")
+    building_data = load_campus_data("data/campus_data")
 
     # user_input
     minimum_credit = int(input("0. 최소 희망 학점: "))
