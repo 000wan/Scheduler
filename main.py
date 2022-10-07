@@ -6,10 +6,9 @@
 # History :
 #    2022/08/09 : Start development with python
 #    2022/08/10 ~ 2022/08/14 : Complete search algorithm using dp
-#    2022/08/15 ~ 2022/08/29 : Generate ime-table image
+#    2022/08/15 ~ 2022/08/29 : Generate time-table image
 #    2022/08/31 ~ 2022/09/07 : Enhance OOP
 #    2022/09/07 ~ Current : Add new feature: distance among buildings
-#
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -28,7 +27,8 @@ import time as current_time
 import data
 
 line_string = "=========================\n"
-days = ['월', '화', '수', '목', '금', '토', '일']
+day_label_KR = ['월', '화', '수', '목', '금', '토', '일']
+day_label_EN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
 colors = matplotlib.cm.get_cmap('Pastel1').colors + matplotlib.cm.get_cmap('Pastel2').colors    # Pastel colors
 
 lecture_list = {}  # 과목코드:Lecture 리스트
@@ -41,22 +41,30 @@ def class_building(classroom):
             return building
     return ''
 
-def time_stock(period):  # lecture time text to int list
+def time_stock(period):  # lecture time text to float list
     result = list()
+
     for p in period.split('\r\n'):
         if p:
             items = p.split(' ')
-            day = days.index(items[0])
+            day = day_label_KR.index(items[0])
             times = items[1].split('~')
-            # 00:00~24:00 -> 0~48 one-to-one mapping
-            start = 2 * int(times[0].split(':')[0]) + int(times[0].split(':')[1]) // 30
-            end = 2 * int(times[1].split(':')[0]) + int(times[1].split(':')[1]) // 30
 
-            for t in range(start, end):
-                result.append(48 * day + t)  # day,time -> 0~7*48
+            # day,time -> 00.00 ~ 7*24.00
+            # 00:00~24:00 -> 00.00 ~ 24.00 (float)
+            start = 24 * day + float(times[0].split(':')[0]) + float(times[0].split(':')[1]) / 60
+            end = 24 * day + float(times[1].split(':')[0]) + float(times[1].split(':')[1]) / 60
 
-    result.sort()
+            result.append((start, end))
+
     return result
+
+def is_time_intersect(list1, list2):    # compare two time stock lists (can be tuple)
+    for t1 in list1:
+        for t2 in list2:
+            if t1[0] <= t2[0] < t1[1] or t2[0] <= t1[0] < t2[1]: # whether two time stock intersects
+                return True
+    return False
 
 
 class Lecture:
@@ -103,13 +111,13 @@ class TimeTable:
         # Ref: https://masudakoji.github.io/2015/05/23/generate-timetable-using-matplotlib/en/
 
         time_table = self.dict
-        days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
-        times = list()
+
+        time_label = list()
         for i in range(16, 49):
             if i % 2 == 0:
-                times.append(i // 2)
+                time_label.append(i // 2)
             else:
-                times.append('')
+                time_label.append('')
 
         # fig = plt.figure(figsize=(15, 15)) # 10*15:time-table + 5*15:info
         fig, axs = plt.subplots(1, 2, figsize=(15, 15), gridspec_kw={'width_ratios': [2, 1]})
@@ -117,12 +125,12 @@ class TimeTable:
         # Set Axis
         ax = axs[0]
         ax.yaxis.grid(linestyle='--', color='gray')
-        ax.set_xlim(0.5, len(days) + 0.5)
+        ax.set_xlim(0.5, len(day_label_EN) + 0.5)
         ax.set_ylim(24.1, 7.9)
-        ax.set_xticks(range(1, len(days) + 1))
+        ax.set_xticks(range(1, len(day_label_EN) + 1))
         ax.set_yticks(list(map(lambda x: x / 2, range(16, 49))))
-        ax.set_xticklabels(days)
-        ax.set_yticklabels(times)
+        ax.set_xticklabels(day_label_EN)
+        ax.set_yticklabels(time_label)
 
         # Set Second Axis
         ax2 = ax.twiny().twinx()
@@ -130,23 +138,18 @@ class TimeTable:
         ax2.set_ylim(ax.get_ylim())
         ax2.set_xticks(ax.get_xticks())
         ax2.set_yticks(ax.get_yticks())
-        ax2.set_xticklabels(days)
-        ax2.set_yticklabels(times)
+        ax2.set_xticklabels(day_label_EN)
+        ax2.set_yticklabels(time_label)
 
         for lec_code in time_table:
             lec = lecture_list[lec_code]
             cls = time_table[lec_code][0]
             times = cls.lecture_time
 
-            pivot = 0
-            for t in range(len(times)):
-                if t < len(times) - 1:
-                    if times[t + 1] - times[t] == 1 and times[t] // 48 == times[t + 1] // 48:
-                        continue  # connected time
-
-                day = times[pivot] // 48 + 1  # 1,2,3,4,5 -> M,T,W,T,F
-                start = (times[pivot] % 48) * 0.5 + 0.05
-                end = (times[t] % 48 + 1) * 0.5 - 0.05
+            for timeStock in times:
+                day = timeStock[0] // 24 + 1  # 1,2,3,4,5 -> M,T,W,T,F
+                start = timeStock[0] % 24 + 0.05
+                end = timeStock[1] % 24 - 0.05
 
                 # plot time block
                 axs[0].fill_between([day - 0.48, day + 0.48], [start, start], [end, end], color=lec.color,
@@ -171,8 +174,6 @@ class TimeTable:
                     bottom_title += building_data[cls.building]['KR']''' # KR building name
                 axs[0].text(day - 0.45, end - 0.03, cls.building, va='bottom', fontsize=12)
 
-                pivot = t + 1
-
         axs[0].set_title("{0}st Time Table".format(count), y=1.07, fontsize=21)
 
         # Info table
@@ -186,10 +187,10 @@ class TimeTable:
         axs[1].axis('off')
         axs[1].axis('tight')
 
-        if not os.path.exists(result_path):
+        '''if not os.path.exists(result_path):
             os.makedirs(result_path)
-        plt.savefig(result_path+'/{0}.png'.format(count), dpi=200)
-        #plt.show()
+        plt.savefig(result_path+'/{0}.png'.format(count), dpi=200)'''
+        plt.show()
 
 
 # 상태:(남은 신청 과목(tuple), 이미 사용한 시간(tuple)) -> 결과:해당 상태에서 가능한 강의 조합 memoization
@@ -220,8 +221,8 @@ def search(enroll_list, used_time, remain_credit, necessary_list):
 
     lec = enroll_list[0]
     for cls in lec.classes:
-        if len(set(used_time) & set(cls.lecture_time)) == 0:
-            new_used_time = list(set(used_time) | set(cls.lecture_time))
+        if not is_time_intersect(used_time, cls.lecture_time):
+            new_used_time = list(used_time) + cls.lecture_time
             new_used_time.sort()
 
             new_necessary_list = list(necessary_list)
@@ -230,7 +231,7 @@ def search(enroll_list, used_time, remain_credit, necessary_list):
 
             # next search
             successor = search(enroll_list[1:], tuple(new_used_time), remain_credit - lec.credit.real, new_necessary_list)
-            if successor:
+            if isinstance(successor, list):
                 for i in successor:
                     flag = True
                     for j in res:
@@ -253,7 +254,7 @@ def search(enroll_list, used_time, remain_credit, necessary_list):
     # without lec search
     if lec not in necessary_list:
         successor = search(enroll_list[1:], used_time, remain_credit, necessary_list)
-        if successor:
+        if isinstance(successor, list):
             res = res + successor
 
     memo[enroll_list][used_time] = res
@@ -313,7 +314,7 @@ def choose_lectures(max_cnt=100):
     res = []
     cnt = 0
     while cnt < max_cnt:
-        inp = input()
+        inp = input().upper()
         if inp:
             if inp in lecture_list.keys():
                 res.append(lecture_list[inp])
@@ -351,7 +352,7 @@ if __name__ == '__main__':
     result = search(tuple(input_list), tuple(), minimum_credit, necessary_list)
 
     result_path = 'result/' + current_time.strftime('%Y-%m-%d %H_%M_%S')
-    if result:
+    if isinstance(result, list):
         for i, dict in enumerate(result):  # iterating time tables
             table = TimeTable(dict)
             table.print_table(i+1, result_path)
