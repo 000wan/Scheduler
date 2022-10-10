@@ -143,7 +143,8 @@ class TimeTable:
 
         for lec_code in time_table:
             lec = lecture_list[lec_code]
-            cls = time_table[lec_code][0]
+            classes = time_table[lec_code]
+            cls = classes[0]
             times = cls.lecture_time
 
             for timeStock in times:
@@ -154,25 +155,32 @@ class TimeTable:
                 # plot time block
                 axs[0].fill_between([day - 0.48, day + 0.48], [start, start], [end, end], color=lec.color,
                                     edgecolor='k', linewidth=0.5)
-                if len(lec.classes) == 1:
+                if len(classes) == 1:
                     # only title
                     # axs[0].text(day, (start + end) * 0.5, cls.lecture_name, ha='center', va='center', fontsize=15)
-                    axs[0].text(day, (start + end) * 0.5 - 0.15, cls.lecture_name, ha='center', va='center',
-                                fontsize=15)
-                    sub_title = '(' + cls.professor + ')'
-                    axs[0].text(day, (start + end) * 0.5 + 0.15, sub_title, ha='center', va='center', fontsize=11)
+                    sub_title = cls.professor + ' (' + str(cls) + ')'
+                    clsroom = cls.classroom.strip()
+                    try:
+                        building_string = f'({ cls.building }){ building_data[cls.building]["KR"] }'
+                        if clsroom.startswith(building_string):
+                            room_number = clsroom[len(building_string):]
+                            info_text = cls.building + ' ' + room_number
+                            if len(info_text) > 10 and not '\n' in info_text:
+                                info_text = info_text[:10] + '\n' + info_text[10:].strip()
+                        else:
+                            raise
+                    except:
+                        info_text = cls.building
                 else:
-                    axs[0].text(day, (start + end) * 0.5 - 0.15, cls.lecture_name, ha='center', va='center',
-                                fontsize=15)
                     classes = list(map(str, time_table[lec_code]))
                     sub_title = '(' + (', '.join(classes)) + ')'
-                    axs[0].text(day, (start + end) * 0.5 + 0.15, sub_title, ha='center', va='center', fontsize=12)
+                    info_text = cls.building
 
-                # class location
-                '''bottom_title = '(' + cls.building + ')'
-                if cls.building in building_data.keys():
-                    bottom_title += building_data[cls.building]['KR']''' # KR building name
-                axs[0].text(day - 0.45, end - 0.03, cls.building, va='bottom', fontsize=12)
+                axs[0].text(day, (start + end) * 0.5 - 0.15, cls.lecture_name, ha='center', va='center',
+                            fontsize=15)
+                axs[0].text(day, (start + end) * 0.5 + 0.15, sub_title, ha='center', va='center', fontsize=11)
+
+                axs[0].text(day - 0.45, end - 0.25, info_text, va='top', fontsize=12)
 
         axs[0].set_title("{0}st Time Table".format(count), y=1.07, fontsize=21)
 
@@ -198,8 +206,8 @@ memo = {}
 
 
 # dp 탐색 함수
-def search(enroll_list, used_time, remain_credit, necessary_list):
-    # enroll_list:tuple, used_time:tuple, remain_credit:int, necessary_list:list
+def search(enroll_list, used_time, remain_credit, necessary_list, selected_classes):
+    # enroll_list:tuple, used_time:tuple, remain_credit:int, necessary_list:list, selected_classes:list
     global memo
     if not enroll_list in memo.keys():
         memo[enroll_list] = {}
@@ -220,17 +228,18 @@ def search(enroll_list, used_time, remain_credit, necessary_list):
         res.append({})
 
     lec = enroll_list[0]
-    for cls in lec.classes:
+    for cls in selected_classes[0][1]:
         if not is_time_intersect(used_time, cls.lecture_time):
             new_used_time = list(used_time) + cls.lecture_time
             new_used_time.sort()
 
-            new_necessary_list = list(necessary_list)
+            '''new_necessary_list = list(necessary_list)
             if lec in new_necessary_list:
-                new_necessary_list.remove(lec)
+                new_necessary_list.remove(lec)'''
 
             # next search
-            successor = search(enroll_list[1:], tuple(new_used_time), remain_credit - lec.credit.real, new_necessary_list)
+            successor = search(enroll_list[1:], tuple(new_used_time), remain_credit - lec.credit.real,
+                               necessary_list[1:], selected_classes[1:])
             if isinstance(successor, list):
                 for i in successor:
                     flag = True
@@ -253,7 +262,7 @@ def search(enroll_list, used_time, remain_credit, necessary_list):
                         res.append(new_res)
     # without lec search
     if lec not in necessary_list:
-        successor = search(enroll_list[1:], used_time, remain_credit, necessary_list)
+        successor = search(enroll_list[1:], used_time, remain_credit, necessary_list, selected_classes[1:])
         if isinstance(successor, list):
             res = res + successor
 
@@ -314,15 +323,28 @@ def choose_lectures(max_cnt=100):
     res = []
     cnt = 0
     while cnt < max_cnt:
-        inp = input().upper()
-        if inp:
-            if inp in lecture_list.keys():
-                res.append(lecture_list[inp])
+        # input form: "MAS109" or "MAS109 A,C,E"
+        inp = input().upper().split()
+
+        if len(inp):
+            try:
+                lec = lecture_list[inp[0]]
+                cls = list()
+                if len(inp) > 1:
+                    inp_cls = inp[1].split(',')
+                    for i in inp_cls:
+                        class_names = list(map(str, lec.classes))
+                        cls.append(lec.classes[class_names.index(i)])
+                else:
+                    cls = lec.classes
+
+                res.append((lec, cls))
                 cnt += 1
-            else:
-                print("- Code not in the data list! Try again.")
+            except:
+                print("- Lecture not in the data list! Try again.")
         else:
             break
+
     return res
 
 
@@ -345,11 +367,13 @@ if __name__ == '__main__':
 
     # lecture block color decision
     input_list = necessary_list + wish_list
-    for i, lec in enumerate(input_list):
+    input_lectures = tuple(map(lambda x: x[0], input_list))
+    necessary_lectures = tuple(map(lambda x: x[0], necessary_list))
+    for i, lec in enumerate(input_lectures):
         lec.color = colors[i % len(colors)]
 
     # start search
-    result = search(tuple(input_list), tuple(), minimum_credit, necessary_list)
+    result = search(input_lectures, tuple(), minimum_credit, necessary_lectures, input_list)
 
     result_path = 'result/' + current_time.strftime('%Y-%m-%d %H_%M_%S')
     if isinstance(result, list):
@@ -359,9 +383,9 @@ if __name__ == '__main__':
 
             # print in terminal
             '''print("%dst Time Table:" % (i + 1))
-            for lecture in table:  # iterating lectures
+            for lecture in dict:  # iterating lectures
                 print(lecture, end='    ')
-                for cls in table[lecture]:
+                for cls in dict[lecture]:
                     print(cls, end=',')
                 print()
             print('\n')'''
