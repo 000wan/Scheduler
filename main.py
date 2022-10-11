@@ -12,13 +12,6 @@
 
 import matplotlib
 
-# Korean Font 'malgun gothic' loaded
-from matplotlib import font_manager, rc
-font_path = "C:/Windows/Fonts/malgun.ttf"
-try:    font = font_manager.FontProperties(fname=font_path).get_name()
-except: raise Exception("Korean Font 'Malgun Gothic' required in 'C:/Windows/Fonts/malgun.ttf'")
-rc('font', family=font)
-
 import os
 import time as current_time
 
@@ -341,7 +334,7 @@ if __name__ == '__main__':
                 [int(table.credit.imag), "AU"]
             ]
 
-            schedule.print("{0}st Time Table".format(i+1), result_path, str(i+1), info_table=info_data, save=False, show=True)
+            schedule.print("{0}st Time Table".format(i+1), result_path, str(i+1), info_table=info_data, save=True, show=True)
 
             # print in terminal
             '''print("%dst Time Table:" % (i + 1))

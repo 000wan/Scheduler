@@ -1,6 +1,13 @@
 import matplotlib.pyplot as plt
 import json
 
+# Korean Font 'malgun gothic' loaded
+from matplotlib import font_manager, rc
+font_path = "C:/Windows/Fonts/malgun.ttf"
+try:    font = font_manager.FontProperties(fname=font_path).get_name()
+except: raise Exception("Korean Font 'Malgun Gothic' required in 'C:/Windows/Fonts/malgun.ttf'")
+rc('font', family=font)
+
 day_label_KR = ['월', '화', '수', '목', '금', '토', '일']
 day_label_EN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
 
@@ -22,7 +29,11 @@ class Schedule:
 
     def load(self, result_path, file_name):
         with open('{0}/{1}.json'.format(result_path, file_name)) as f:
-            self.list = json.load(f)
+            loaded = json.load(f)
+
+            for l in loaded:
+                block = Block(l['title'], l['sub_title'], l['info'], l['color'], l['time'])
+                self.list.append(block)
 
     def print(self, image_title, result_path, file_name, info_table=[], save=False, show=True):
         # time table matplotlib
