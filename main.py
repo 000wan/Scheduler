@@ -11,7 +11,6 @@
 #    2022/09/07 ~ Current : Add new feature: distance among buildings
 
 import matplotlib
-import matplotlib.pyplot as plt
 
 # Korean Font 'malgun gothic' loaded
 from matplotlib import font_manager, rc
@@ -23,8 +22,9 @@ rc('font', family=font)
 import os
 import time as current_time
 
-# import data folder
+# import data, result folder
 import data
+import result
 
 line_string = "=========================\n"
 day_label_KR = ['월', '화', '수', '목', '금', '토', '일']
@@ -42,7 +42,7 @@ def class_building(classroom):
     return ''
 
 def time_stock(period):  # lecture time text to float list
-    result = list()
+    res = list()
 
     for p in period.split('\r\n'):
         if p:
@@ -55,9 +55,9 @@ def time_stock(period):  # lecture time text to float list
             start = 24 * day + float(times[0].split(':')[0]) + float(times[0].split(':')[1]) / 60
             end = 24 * day + float(times[1].split(':')[0]) + float(times[1].split(':')[1]) / 60
 
-            result.append((start, end))
+            res.append((start, end))
 
-    return result
+    return res
 
 def is_time_intersect(list1, list2):    # compare two time stock lists (can be tuple)
     for t1 in list1:
@@ -106,40 +106,9 @@ class TimeTable:
             credit += lecture_list[lec].credit
         self.credit = credit
 
-    def print_table(self, count, result_path):
-        # time table matplotlib
-        # Ref: https://masudakoji.github.io/2015/05/23/generate-timetable-using-matplotlib/en/
-
+    def convert_to_Schedule(self):
         time_table = self.dict
-
-        time_label = list()
-        for i in range(16, 49):
-            if i % 2 == 0:
-                time_label.append(i // 2)
-            else:
-                time_label.append('')
-
-        # fig = plt.figure(figsize=(15, 15)) # 10*15:time-table + 5*15:info
-        fig, axs = plt.subplots(1, 2, figsize=(15, 15), gridspec_kw={'width_ratios': [2, 1]})
-
-        # Set Axis
-        ax = axs[0]
-        ax.yaxis.grid(linestyle='--', color='gray')
-        ax.set_xlim(0.5, len(day_label_EN) + 0.5)
-        ax.set_ylim(24.1, 7.9)
-        ax.set_xticks(range(1, len(day_label_EN) + 1))
-        ax.set_yticks(list(map(lambda x: x / 2, range(16, 49))))
-        ax.set_xticklabels(day_label_EN)
-        ax.set_yticklabels(time_label)
-
-        # Set Second Axis
-        ax2 = ax.twiny().twinx()
-        ax2.set_xlim(ax.get_xlim())
-        ax2.set_ylim(ax.get_ylim())
-        ax2.set_xticks(ax.get_xticks())
-        ax2.set_yticks(ax.get_yticks())
-        ax2.set_xticklabels(day_label_EN)
-        ax2.set_yticklabels(time_label)
+        block_list = list()
 
         for lec_code in time_table:
             lec = lecture_list[lec_code]
@@ -148,24 +117,23 @@ class TimeTable:
             times = cls.lecture_time
 
             for timeStock in times:
-                day = timeStock[0] // 24 + 1  # 1,2,3,4,5 -> M,T,W,T,F
-                start = timeStock[0] % 24 + 0.05
-                end = timeStock[1] % 24 - 0.05
+                block = result.Block(time=timeStock, color=lec.color)
 
-                # plot time block
-                axs[0].fill_between([day - 0.48, day + 0.48], [start, start], [end, end], color=lec.color,
-                                    edgecolor='k', linewidth=0.5)
                 if len(classes) == 1:
-                    # only title
-                    # axs[0].text(day, (start + end) * 0.5, cls.lecture_name, ha='center', va='center', fontsize=15)
+                    # 부제목: `{교수명} ({분반명})`
                     sub_title = cls.professor + ' (' + str(cls) + ')'
+
+                    # get classroom number
                     clsroom = cls.classroom.strip()
                     try:
                         building_string = f'({ cls.building }){ building_data[cls.building]["KR"] }'
+
                         if clsroom.startswith(building_string):
                             room_number = clsroom[len(building_string):]
+
+                            # Info: `{건물코드} {호수}`
                             info_text = cls.building + ' ' + room_number
-                            if len(info_text) > 10 and not '\n' in info_text:
+                            if len(info_text) > 10 and not '\n' in info_text:   # break in ten characters
                                 info_text = info_text[:10] + '\n' + info_text[10:].strip()
                         else:
                             raise
@@ -176,34 +144,17 @@ class TimeTable:
                     sub_title = '(' + (', '.join(classes)) + ')'
                     info_text = cls.building
 
-                axs[0].text(day, (start + end) * 0.5 - 0.15, cls.lecture_name, ha='center', va='center',
-                            fontsize=15)
-                axs[0].text(day, (start + end) * 0.5 + 0.15, sub_title, ha='center', va='center', fontsize=11)
+                block.title = cls.lecture_name
+                block.sub_title = sub_title
+                block.info = info_text
 
-                axs[0].text(day - 0.45, end - 0.25, info_text, va='top', fontsize=12)
+                block_list.append(block)
 
-        axs[0].set_title("{0}st Time Table".format(count), y=1.07, fontsize=21)
-
-        # Info table
-        table_data = [
-            [int(self.credit.real), "학점"],
-            [int(self.credit.imag), "AU"]
-        ]
-        table = axs[1].table(cellText=table_data, cellLoc='center', loc='center', edges='open')
-        table.set_fontsize(18)
-        table.scale(0.5, 2)
-        axs[1].axis('off')
-        axs[1].axis('tight')
-
-        '''if not os.path.exists(result_path):
-            os.makedirs(result_path)
-        plt.savefig(result_path+'/{0}.png'.format(count), dpi=200)'''
-        plt.show()
+        return result.Schedule(block_list)
 
 
 # 상태:(남은 신청 과목(tuple), 이미 사용한 시간(tuple)) -> 결과:해당 상태에서 가능한 강의 조합 memoization
 memo = {}
-
 
 # dp 탐색 함수
 def search(enroll_list, used_time, remain_credit, necessary_list, selected_classes):
@@ -373,13 +324,24 @@ if __name__ == '__main__':
         lec.color = colors[i % len(colors)]
 
     # start search
-    result = search(input_lectures, tuple(), minimum_credit, necessary_lectures, input_list)
+    search_result = search(input_lectures, tuple(), minimum_credit, necessary_lectures, input_list)
 
     result_path = 'result/' + current_time.strftime('%Y-%m-%d %H_%M_%S')
-    if isinstance(result, list):
-        for i, dict in enumerate(result):  # iterating time tables
+    if not os.path.exists(result_path):
+        os.makedirs(result_path)
+
+    if isinstance(search_result, list):
+        for i, dict in enumerate(search_result):  # iterating time tables
             table = TimeTable(dict)
-            table.print_table(i+1, result_path)
+            schedule = table.convert_to_Schedule()
+            schedule.save(result_path, str(i+1))
+
+            info_data = [
+                [int(table.credit.real), "학점"],
+                [int(table.credit.imag), "AU"]
+            ]
+
+            schedule.print("{0}st Time Table".format(i+1), result_path, str(i+1), info_table=info_data, save=False, show=True)
 
             # print in terminal
             '''print("%dst Time Table:" % (i + 1))
